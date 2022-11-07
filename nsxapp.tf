@@ -71,6 +71,7 @@ data "vsphere_virtual_machine" "hr-app-01" {
 data "vsphere_virtual_machine" "hr-db-01" {
   name          = "hr-db-01"
   datacenter_id = data.vsphere_datacenter.datacenter.id
+}
 
 #Define group membership to be used in Firewall Rule
 
