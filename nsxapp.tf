@@ -34,6 +34,25 @@ data "nsxt_policy_service" "https" {
   display_name = "HTTPS"
 }
 
+data "vsphere_datacenter" "datacenter" {
+  name = "RegionA01"
+}
+
+data "vsphere_datastore" "datastore" {
+  name          = "Local-esx-01a"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+data "vsphere_compute_cluster" "cluster" {
+  name          = "RegionA01-COMP01"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+data "vsphere_network" "network" {
+  name          = "HR-VLAN"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
 resource "nsxt_policy_group" "hr_web_group" {
   display_name = "HR Web VMs"
   description  = "Group consisting of HR Web VMs VMs"
@@ -173,5 +192,27 @@ resource "nsxt_policy_security_policy" "firewall_section" {
     logged                = true
     ip_version            = "IPV4"
     scope                 = [nsxt_policy_group.all_HR.path]
+  }
+}
+
+resource "vsphere_virtual_machine" "vm" {
+  name             = "CICD-HR-WEB"
+  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
+  datastore_id     = data.vsphere_datastore.datastore.id
+  num_cpus         = 1
+  memory           = 1024
+  guest_id         = data.vsphere_virtual_machine.hr-web-01.guest_id
+  scsi_type        = data.vsphere_virtual_machine.hr-web-01.scsi_type
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.hr-web-01.network_interface_types[0]
+  }
+  disk {
+    label            = "disk0"
+    size             = data.vsphere_virtual_machine.hr-web-01.disks.0.size
+    thin_provisioned = data.vsphere_virtual_machine.hr-web-01.disks.0.thin_provisioned
+  }
+  clone {
+    template_uuid = data.vsphere_virtual_machine.hr-web-01.id
   }
 }
