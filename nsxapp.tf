@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    nsxt = {
+      source = "vmware/nsxt"
+    }
+  }
+}
+
 provider "vsphere" {
   user                 = "administrator@vsphere.local"
   password             = "VMware1!"
