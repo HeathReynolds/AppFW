@@ -4,26 +4,25 @@ pipeline {
     skipDefaultCheckout(true)
   }
   stages{
-    stage('clean workspace') {
-      steps {
-        cleanWs()
-      }
-    }
     stage('checkout') {
       steps {
         checkout scm
       }
     }
-    stage('terraform') {
+    stage('terraform init') {
       steps {
         bat "${tool name: 'JenkinsTF'}terraform init"
-        bat "${tool name: 'JenkinsTF'}terraform apply -auto-approve -no-color"
       }
     }
-  }
-  post {
-    always {
-      cleanWs()
+    stage('terraform refresh') {
+      steps {
+        bat "${tool name: 'JenkinsTF'}terraform refresh"
+      }
+    }
+    stage('terraform apply') {
+      steps {
+        bat "${tool name: 'JenkinsTF'}terraform apply -auto-approve -no-color"
+      }
     }
   }
 }
