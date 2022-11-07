@@ -164,7 +164,6 @@ resource "nsxt_policy_group" "all_HR" {
       operator    = "CONTAINS"
       key         = "Tag"
       value       = "HR"
-      scope       = "App"
     }
   }
 }
