@@ -311,24 +311,8 @@ resource "vsphere_virtual_machine" "vm4" {
 
 #Apply tags to newly created VMs
 
-data "nsxt_policy_vm" "web_01" {
-  display_name = "CICD-HR-WEB01"
-}
-
-data "nsxt_policy_vm" "web_02" {
-  display_name = "CICD-HR-WEB02"
-}
-
-data "nsxt_policy_vm" "app_01" {
-  display_name = "CICD-HR-APP01"
-}
-
-data "nsxt_policy_vm" "db_01" {
-  display_name = "CICD-HR-DB01"
-}
-
 resource "nsxt_policy_vm_tags" "web01_vm_tag" {
-  instance_id = data.nsxt_policy_vm.web_01.instance_id
+  instance_id = data.nsxt_policy_vm.vm1.instance_id
   tag {
     scope = "tier"
     tag   = "Web"
@@ -340,7 +324,7 @@ resource "nsxt_policy_vm_tags" "web01_vm_tag" {
 }
 
 resource "nsxt_policy_vm_tags" "web02_vm_tag" {
-  instance_id = data.nsxt_policy_vm.web_02.instance_id
+  instance_id = data.nsxt_policy_vm.vm2.instance_id
   tag {
     scope = "tier"
     tag   = "Web"
@@ -352,7 +336,7 @@ resource "nsxt_policy_vm_tags" "web02_vm_tag" {
 }
 
 resource "nsxt_policy_vm_tags" "app01_vm_tag" {
-  instance_id = data.nsxt_policy_vm.app_01.instance_id
+  instance_id = data.nsxt_policy_vm.vm3.instance_id
   tag {
     scope = "tier"
     tag   = "App"
@@ -364,7 +348,7 @@ resource "nsxt_policy_vm_tags" "app01_vm_tag" {
 }
 
 resource "nsxt_policy_vm_tags" "db01_vm_tag" {
-  instance_id = data.nsxt_policy_vm.db_01.instance_id
+  instance_id = data.nsxt_policy_vm.vm4.instance_id
   tag {
     scope = "tier"
     tag   = "DB"
