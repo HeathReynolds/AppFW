@@ -58,6 +58,22 @@ data "vsphere_virtual_machine" "hr-web-01" {
   datacenter_id = data.vsphere_datacenter.datacenter.id
 }
 
+data "vsphere_virtual_machine" "hr-web-02" {
+  name          = "hr-web-02"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+data "vsphere_virtual_machine" "hr-app-01" {
+  name          = "hr-app-01"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+data "vsphere_virtual_machine" "hr-db-01" {
+  name          = "hr-db-01"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+
+#Define group membership to be used in Firewall Rule
+
 resource "nsxt_policy_group" "hr_web_group" {
   display_name = "HR Web VMs"
   description  = "Group consisting of HR Web VMs VMs"
@@ -136,6 +152,8 @@ resource "nsxt_policy_group" "hr_db_group" {
   }
 }
 
+#Create Microseg firewall rules for HR app
+
 resource "nsxt_policy_group" "all_HR" {
   display_name = "HR_VMs"
   description  = "Group consisting of all HR VMs"
@@ -145,6 +163,7 @@ resource "nsxt_policy_group" "all_HR" {
       operator    = "CONTAINS"
       key         = "Tag"
       value       = "HR"
+      scope       = "App"
     }
   }
 }
@@ -185,8 +204,8 @@ resource "nsxt_policy_security_policy" "firewall_section" {
     action                = "ALLOW"
     logged                = true
     ip_version            = "IPV4"
-    destination_groups    = [nsxt_policy_group.hr_web_group.path]
-    source_groups         = [nsxt_policy_group.hr_app_group.path]
+    destination_groups    = [nsxt_policy_group.hr_app_group.path]
+    source_groups         = [nsxt_policy_group.hr_db_group.path]
     scope                 = [nsxt_policy_group.all_HR.path]
   }
 
@@ -199,6 +218,8 @@ resource "nsxt_policy_security_policy" "firewall_section" {
     scope                 = [nsxt_policy_group.all_HR.path]
   }
 }
+
+#Create HR Application VMs
 
 resource "vsphere_virtual_machine" "vm" {
   name             = "CICD-HR-WEB01"
@@ -219,5 +240,137 @@ resource "vsphere_virtual_machine" "vm" {
   }
   clone {
     template_uuid = data.vsphere_virtual_machine.hr-web-01.id
+  }
+}
+
+resource "vsphere_virtual_machine" "vm" {
+  name             = "CICD-HR-WEB02"
+  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
+  datastore_id     = data.vsphere_datastore.datastore.id
+  num_cpus         = 1
+  memory           = 1024
+  guest_id         = data.vsphere_virtual_machine.hr-web-02.guest_id
+  scsi_type        = data.vsphere_virtual_machine.hr-web-02.scsi_type
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.hr-web-02.network_interface_types[0]
+  }
+  disk {
+    label            = "disk0"
+    size             = data.vsphere_virtual_machine.hr-web-02.disks.0.size
+    thin_provisioned = data.vsphere_virtual_machine.hr-web-02.disks.0.thin_provisioned
+  }
+  clone {
+    template_uuid = data.vsphere_virtual_machine.hr-web-02.id
+  }
+}
+
+resource "vsphere_virtual_machine" "vm" {
+  name             = "CICD-HR-APP01"
+  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
+  datastore_id     = data.vsphere_datastore.datastore.id
+  num_cpus         = 1
+  memory           = 1024
+  guest_id         = data.vsphere_virtual_machine.hr-app-01.guest_id
+  scsi_type        = data.vsphere_virtual_machine.hr-app-01.scsi_type
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.hr-app-01.network_interface_types[0]
+  }
+  disk {
+    label            = "disk0"
+    size             = data.vsphere_virtual_machine.hr-app-01.disks.0.size
+    thin_provisioned = data.vsphere_virtual_machine.hr-app-01.disks.0.thin_provisioned
+  }
+  clone {
+    template_uuid = data.vsphere_virtual_machine.hr-app-01.id
+  }
+}
+
+resource "vsphere_virtual_machine" "vm" {
+  name             = "CICD-HR-DB01"
+  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
+  datastore_id     = data.vsphere_datastore.datastore.id
+  num_cpus         = 1
+  memory           = 1024
+  guest_id         = data.vsphere_virtual_machine.hr-db-01.guest_id
+  scsi_type        = data.vsphere_virtual_machine.hr-db-01.scsi_type
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.hr-db-01.network_interface_types[0]
+  }
+  disk {
+    label            = "disk0"
+    size             = data.vsphere_virtual_machine.hr-db-01.disks.0.size
+    thin_provisioned = data.vsphere_virtual_machine.hr-db-01.disks.0.thin_provisioned
+  }
+  clone {
+    template_uuid = data.vsphere_virtual_machine.hr-db-01.id
+  }
+}
+
+#Apply tags to newly created VMs
+
+data "nsxt_policy_vm" "web_01" {
+  display_name = "CICD-HR-WEB01"
+}
+
+data "nsxt_policy_vm" "web_02" {
+  display_name = "CICD-HR-WEB02"
+}
+
+data "nsxt_policy_vm" "app_01" {
+  display_name = "CICD-HR-APP01"
+}
+
+data "nsxt_policy_vm" "db_01" {
+  display_name = "CICD-HR-DB01"
+}
+
+resource "nsxt_policy_vm_tags" "web01_vm_tag" {
+  instance_id = data.nsxt_policy_vm.web_01.instance_id
+  tag {
+    scope = "tier"
+    tag   = "Web"
+  }
+  tag {
+    scope = "app"
+    tag   = "HR"
+  }
+}
+
+resource "nsxt_policy_vm_tags" "web02_vm_tag" {
+  instance_id = data.nsxt_policy_vm.web_02.instance_id
+  tag {
+    scope = "tier"
+    tag   = "Web"
+  }
+  tag {
+    scope = "app"
+    tag   = "HR"
+  }
+}
+
+resource "nsxt_policy_vm_tags" "app01_vm_tag" {
+  instance_id = data.nsxt_policy_vm.app_01.instance_id
+  tag {
+    scope = "tier"
+    tag   = "App"
+  }
+  tag {
+    scope = "app"
+    tag   = "HR"
+  }
+}
+
+resource "nsxt_policy_vm_tags" "db01_vm_tag" {
+  instance_id = data.nsxt_policy_vm.db_01.instance_id
+  tag {
+    scope = "tier"
+    tag   = "DB"
+  }
+  tag {
+    scope = "app"
+    tag   = "HR"
   }
 }
