@@ -53,6 +53,11 @@ data "vsphere_network" "network" {
   datacenter_id = data.vsphere_datacenter.datacenter.id
 }
 
+data "vsphere_virtual_machine" "hr-web-01" {
+  name          = "hr-web-01"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
 resource "nsxt_policy_group" "hr_web_group" {
   display_name = "HR Web VMs"
   description  = "Group consisting of HR Web VMs VMs"
@@ -196,7 +201,7 @@ resource "nsxt_policy_security_policy" "firewall_section" {
 }
 
 resource "vsphere_virtual_machine" "vm" {
-  name             = "CICD-HR-WEB"
+  name             = "CICD-HR-WEB01"
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
   num_cpus         = 1
