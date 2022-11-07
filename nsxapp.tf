@@ -244,7 +244,7 @@ resource "vsphere_virtual_machine" "vm" {
   }
 }
 
-resource "vsphere_virtual_machine" "vm" {
+resource "vsphere_virtual_machine" "vm2" {
   name             = "CICD-HR-WEB02"
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
@@ -266,7 +266,7 @@ resource "vsphere_virtual_machine" "vm" {
   }
 }
 
-resource "vsphere_virtual_machine" "vm" {
+resource "vsphere_virtual_machine" "vm3" {
   name             = "CICD-HR-APP01"
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
@@ -288,7 +288,7 @@ resource "vsphere_virtual_machine" "vm" {
   }
 }
 
-resource "vsphere_virtual_machine" "vm" {
+resource "vsphere_virtual_machine" "vm4" {
   name             = "CICD-HR-DB01"
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
