@@ -312,7 +312,7 @@ resource "vsphere_virtual_machine" "vm4" {
 #Apply tags to newly created VMs
 
 resource "nsxt_policy_vm_tags" "web01_vm_tag" {
-  instance_id = data.nsxt_policy_vm.vm1.instance_id
+  instance_id = data.vsphere_virtual_machine.vm1.instance_id
   tag {
     scope = "tier"
     tag   = "Web"
@@ -324,7 +324,7 @@ resource "nsxt_policy_vm_tags" "web01_vm_tag" {
 }
 
 resource "nsxt_policy_vm_tags" "web02_vm_tag" {
-  instance_id = data.nsxt_policy_vm.vm2.instance_id
+  instance_id = data.vsphere_virtual_machine.vm2.instance_id
   tag {
     scope = "tier"
     tag   = "Web"
@@ -336,7 +336,7 @@ resource "nsxt_policy_vm_tags" "web02_vm_tag" {
 }
 
 resource "nsxt_policy_vm_tags" "app01_vm_tag" {
-  instance_id = data.nsxt_policy_vm.vm3.instance_id
+  instance_id = data.vsphere_virtual_machine.vm3.instance_id
   tag {
     scope = "tier"
     tag   = "App"
@@ -348,7 +348,7 @@ resource "nsxt_policy_vm_tags" "app01_vm_tag" {
 }
 
 resource "nsxt_policy_vm_tags" "db01_vm_tag" {
-  instance_id = data.nsxt_policy_vm.vm4.instance_id
+  instance_id = data.vsphere_virtual_machine.vm4.instance_id
   tag {
     scope = "tier"
     tag   = "DB"
