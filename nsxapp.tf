@@ -358,4 +358,3 @@ resource "nsxt_policy_vm_tags" "db01_vm_tag" {
     tag   = "HR"
   }
 }
-#test
